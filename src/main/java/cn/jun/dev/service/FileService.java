@@ -1,13 +1,10 @@
 package cn.jun.dev.service;
 
 import cn.jun.dev.exception.BusinessException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,8 +19,6 @@ import java.util.UUID;
 @Service
 public class FileService {
     
-    private static final Logger logger = LoggerFactory.getLogger(FileService.class);
-    
     @Value("${file.upload.path:uploads}")
     private String uploadPath;
     
@@ -32,30 +27,6 @@ public class FileService {
     
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     private static final String[] ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp"};
-    
-    private Path baseUploadPath;
-    
-    @PostConstruct
-    public void init() {
-        // 如果配置的是相对路径，转换为绝对路径（相对于项目根目录）
-        Path path = Paths.get(uploadPath);
-        if (!path.isAbsolute()) {
-            // 获取项目根目录（back目录）
-            String projectRoot = System.getProperty("user.dir");
-            baseUploadPath = Paths.get(projectRoot, uploadPath);
-        } else {
-            baseUploadPath = path;
-        }
-        
-        // 确保基础目录存在
-        try {
-            Files.createDirectories(baseUploadPath);
-            logger.info("文件上传目录初始化成功: {}", baseUploadPath.toAbsolutePath());
-        } catch (IOException e) {
-            logger.error("创建文件上传目录失败: {}", baseUploadPath.toAbsolutePath(), e);
-            throw new RuntimeException("文件上传目录初始化失败", e);
-        }
-    }
     
     /**
      * 上传图片
@@ -74,23 +45,19 @@ public class FileService {
         String relativePath = "images/" + dateFolder + "/" + filename;
         
         // 创建目录
-        Path uploadDir = baseUploadPath.resolve("images").resolve(dateFolder);
+        Path uploadDir = Paths.get(uploadPath, "images", dateFolder);
         try {
             Files.createDirectories(uploadDir);
-            logger.debug("创建目录成功: {}", uploadDir.toAbsolutePath());
         } catch (IOException e) {
-            logger.error("创建目录失败: {}", uploadDir.toAbsolutePath(), e);
-            throw new BusinessException(5000, "创建目录失败: " + e.getMessage());
+            throw new BusinessException(5000, "创建目录失败");
         }
         
         // 保存文件
         Path filePath = uploadDir.resolve(filename);
         try {
             file.transferTo(filePath.toFile());
-            logger.info("文件上传成功: {}", filePath.toAbsolutePath());
         } catch (IOException e) {
-            logger.error("文件保存失败: {}, 错误信息: {}", filePath.toAbsolutePath(), e.getMessage(), e);
-            throw new BusinessException(5000, "文件保存失败: " + e.getMessage());
+            throw new BusinessException(5000, "文件保存失败");
         }
         
         // 返回访问URL
@@ -141,4 +108,3 @@ public class FileService {
         return filename.substring(lastDotIndex);
     }
 }
-
