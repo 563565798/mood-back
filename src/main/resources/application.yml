@@ -1,0 +1,74 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: mood-tracker
+  
+  # 解决Springfox与Spring Boot 2.6+兼容性问题
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  
+  # 文件上传配置
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 10MB
+  
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/mood_tracker?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: root  # 请修改为你的MySQL密码
+  
+  # Redis配置
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 
+      database: 0
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
+
+# MyBatis配置
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: cn.jun.dev.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# JWT配置
+jwt:
+  secret: mood-tracker-secret-key-2024-please-change-this-in-production-environment-for-security
+  expiration: 604800000  # 7天，单位毫秒
+
+# Knife4j配置
+knife4j:
+  enable: true
+  production: false
+
+# 文件上传配置
+file:
+  upload:
+    path: uploads  # 文件存储路径，相对于项目根目录
+
+# 日志配置
+logging:
+  level:
+    cn.jun.dev: debug
+    org.springframework.security: debug
+
+
+
