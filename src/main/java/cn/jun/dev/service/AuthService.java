@@ -19,16 +19,16 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AuthService {
-    
+
     @Autowired
     private UserMapper userMapper;
-    
+
     @Autowired
     private PasswordEncoder passwordEncoder;
-    
+
     @Autowired
     private JwtUtil jwtUtil;
-    
+
     /**
      * 用户注册
      */
@@ -37,17 +37,17 @@ public class AuthService {
         if (!dto.getPassword().equals(dto.getConfirmPassword())) {
             throw new BusinessException("两次密码输入不一致");
         }
-        
+
         // 检查用户名是否已存在
         if (userMapper.findByUsername(dto.getUsername()) != null) {
             throw new BusinessException(ResultCode.USER_ALREADY_EXISTS);
         }
-        
+
         // 检查邮箱是否已存在
         if (dto.getEmail() != null && userMapper.findByEmail(dto.getEmail()) != null) {
             throw new BusinessException("该邮箱已被注册");
         }
-        
+
         // 创建用户
         User user = new User();
         user.setUsername(dto.getUsername());
@@ -55,10 +55,10 @@ public class AuthService {
         user.setEmail(dto.getEmail());
         user.setNickname(dto.getNickname() != null ? dto.getNickname() : dto.getUsername());
         user.setStatus(1);
-        
+
         userMapper.insert(user);
     }
-    
+
     /**
      * 用户登录
      */
@@ -68,27 +68,44 @@ public class AuthService {
         if (user == null) {
             throw new BusinessException(ResultCode.USER_NOT_FOUND);
         }
-        
+
         // 验证密码
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
             throw new BusinessException(ResultCode.USER_PASSWORD_ERROR);
         }
-        
+
         // 检查用户状态
         if (user.getStatus().equals(0)) {
             throw new BusinessException(ResultCode.USER_DISABLED);
         }
-        
+
         // 生成Token
         String token = jwtUtil.generateToken(user.getId(), user.getUsername());
-        
+
         // 构建用户信息VO
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(user, userVO);
-        
+
         return new LoginVO(token, userVO);
     }
+
+    /**
+     * 重置密码
+     */
+    public void resetPassword(cn.jun.dev.dto.ResetPasswordDTO dto) {
+        // 1. 根据用户名查询用户
+        User user = userMapper.findByUsername(dto.getUsername());
+        if (user == null) {
+            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+        }
+
+        // 2. 验证邮箱是否匹配
+        if (!dto.getEmail().equals(user.getEmail())) {
+            throw new BusinessException(ResultCode.EMAIL_NOT_MATCH);
+        }
+
+        // 3. 更新密码
+        String encodedPassword = passwordEncoder.encode(dto.getNewPassword());
+        userMapper.updatePassword(user.getId(), encodedPassword);
+    }
 }
-
-
-

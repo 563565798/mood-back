@@ -21,24 +21,28 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-    
+
     @Autowired
     private AuthService authService;
-    
+
     @ApiOperation("用户注册")
     @PostMapping("/register")
     public Result<Void> register(@Valid @RequestBody RegisterDTO dto) {
         authService.register(dto);
         return Result.success("注册成功", null);
     }
-    
+
     @ApiOperation("用户登录")
     @PostMapping("/login")
     public Result<LoginVO> login(@Valid @RequestBody LoginDTO dto) {
         LoginVO loginVO = authService.login(dto);
         return Result.success("登录成功", loginVO);
     }
+
+    @ApiOperation("忘记密码")
+    @PostMapping("/reset-password")
+    public Result<Void> resetPassword(@Valid @RequestBody cn.jun.dev.dto.ResetPasswordDTO dto) {
+        authService.resetPassword(dto);
+        return Result.success("密码重置成功", null);
+    }
 }
-
-
-
