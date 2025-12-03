@@ -31,6 +31,9 @@ public class MoodRecordService {
     @Autowired
     private MoodTypeMapper moodTypeMapper;
 
+    @Autowired
+    private cn.jun.dev.mapper.MoodShareMapper moodShareMapper;
+
     /**
      * 创建情绪记录
      */
@@ -272,6 +275,9 @@ public class MoodRecordService {
         }
 
         statistics.setTagStatistics(tagStatistics);
+
+        // 分享数统计
+        statistics.setShareCount(moodShareMapper.countByUserId(userId));
 
         return statistics;
     }
