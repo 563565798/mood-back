@@ -254,6 +254,25 @@ public class MoodRecordService {
 
         statistics.setMoodRatio(moodRatio);
 
+        // 标签统计
+        List<MoodRecordVO> records = moodRecordMapper.findByUserIdAndDateRange(userId, startDate, endDate);
+        Map<String, Integer> tagStatistics = new java.util.HashMap<>();
+
+        for (MoodRecordVO record : records) {
+            String tags = record.getTags();
+            if (tags != null && !tags.isEmpty()) {
+                String[] tagArray = tags.split(",");
+                for (String tag : tagArray) {
+                    String trimmedTag = tag.trim();
+                    if (!trimmedTag.isEmpty()) {
+                        tagStatistics.put(trimmedTag, tagStatistics.getOrDefault(trimmedTag, 0) + 1);
+                    }
+                }
+            }
+        }
+
+        statistics.setTagStatistics(tagStatistics);
+
         return statistics;
     }
 
