@@ -10,11 +10,13 @@ import cn.jun.dev.mapper.MoodTypeMapper;
 import cn.jun.dev.util.SecurityUtil;
 import cn.jun.dev.vo.MoodRecordVO;
 import cn.jun.dev.vo.MoodStatisticsVO;
+import cn.jun.dev.vo.MoodWarningVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,9 +37,22 @@ public class MoodRecordService {
     private cn.jun.dev.mapper.MoodShareMapper moodShareMapper;
 
     /**
+     * 验证记录时间是否合法（不能超过当前时间）
+     */
+    private void validateRecordTime(LocalDate date, LocalTime time) {
+        if (date == null || time == null) {
+            return;
+        }
+        LocalDateTime recordDateTime = LocalDateTime.of(date, time);
+        if (recordDateTime.isAfter(LocalDateTime.now())) {
+            throw new BusinessException(ResultCode.PARAM_ERROR.getCode(), "记录时间不能超过当前时间");
+        }
+    }
+
+    /**
      * 创建情绪记录
      */
-    public void createRecord(MoodRecordDTO dto) {
+    public MoodWarningVO createRecord(MoodRecordDTO dto) {
         Long userId = SecurityUtil.getCurrentUserId();
 
         // 验证情绪类型是否存在
@@ -56,11 +71,36 @@ public class MoodRecordService {
         if (record.getRecordTime() == null) {
             record.setRecordTime(LocalTime.now());
         }
+        
+        // 验证时间
+        validateRecordTime(record.getRecordDate(), record.getRecordTime());
+        
         if (record.getIsPrivate() == null) {
             record.setIsPrivate(1);
         }
 
         moodRecordMapper.insert(record);
+        
+        return checkMoodWarning(userId);
+    }
+    
+    private MoodWarningVO checkMoodWarning(Long userId) {
+        List<MoodRecordVO> recentRecords = moodRecordMapper.findRecentRecords(userId, 3);
+        if (recentRecords.size() < 3) {
+            return null;
+        }
+
+        boolean allNegative = recentRecords.stream()
+                .allMatch(r -> r.getMoodType() != null && "negative".equals(r.getMoodType().getCategory()));
+
+        if (allNegative) {
+            MoodWarningVO warning = new MoodWarningVO();
+            warning.setHasWarning(true);
+            warning.setMessage("检测到您最近情绪持续低落，建议您尝试以下方式调节心情：");
+            warning.setSuggestions(Arrays.asList("听听舒缓的音乐", "尝试冥想或深呼吸", "找亲密的朋友聊聊", "出去散步晒晒太阳"));
+            return warning;
+        }
+        return null;
     }
 
     /**
@@ -83,6 +123,9 @@ public class MoodRecordService {
         if (moodTypeMapper.findById(dto.getMoodTypeId()) == null) {
             throw new BusinessException(ResultCode.MOOD_TYPE_NOT_FOUND);
         }
+
+        // 验证时间
+        validateRecordTime(dto.getRecordDate(), dto.getRecordTime());
 
         MoodRecord record = new MoodRecord();
         BeanUtils.copyProperties(dto, record);

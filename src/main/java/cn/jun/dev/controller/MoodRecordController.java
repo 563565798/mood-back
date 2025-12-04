@@ -6,6 +6,7 @@ import cn.jun.dev.dto.MoodRecordDTO;
 import cn.jun.dev.service.MoodRecordService;
 import cn.jun.dev.vo.MoodRecordVO;
 import cn.jun.dev.vo.MoodStatisticsVO;
+import cn.jun.dev.vo.MoodWarningVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import javax.validation.Valid;
@@ -28,9 +29,9 @@ public class MoodRecordController {
     
     @ApiOperation("创建情绪记录")
     @PostMapping
-    public Result<Void> createRecord(@Valid @RequestBody MoodRecordDTO dto) {
-        moodRecordService.createRecord(dto);
-        return Result.success("创建成功", null);
+    public Result<MoodWarningVO> createRecord(@Valid @RequestBody MoodRecordDTO dto) {
+        MoodWarningVO warning = moodRecordService.createRecord(dto);
+        return Result.success("创建成功", warning);
     }
     
     @ApiOperation("更新情绪记录")

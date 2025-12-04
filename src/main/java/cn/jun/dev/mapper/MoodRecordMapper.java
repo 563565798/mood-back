@@ -130,4 +130,12 @@ public interface MoodRecordMapper {
                         "WHERE user_id = #{userId} " +
                         "ORDER BY record_date DESC")
         List<LocalDate> findDistinctRecordDatesByUserId(Long userId);
+
+        /**
+         * 查询最近N条记录（带情绪类型）
+         */
+        @ResultMap("moodRecordWithType")
+        @Select("SELECT * FROM mood_record WHERE user_id = #{userId} " +
+                        "ORDER BY record_date DESC, record_time DESC LIMIT #{limit}")
+        List<MoodRecordVO> findRecentRecords(@Param("userId") Long userId, @Param("limit") Integer limit);
 }
