@@ -37,6 +37,7 @@ public interface MoodShareMapper {
          */
         @Results(id = "moodShareWithType", value = {
                         @Result(property = "id", column = "id"),
+                        @Result(property = "userId", column = "user_id"),
                         @Result(property = "moodType", column = "mood_type_id", one = @One(select = "cn.jun.dev.mapper.MoodTypeMapper.findById"))
         })
         @Select("SELECT * FROM mood_share WHERE is_deleted = 0 " +

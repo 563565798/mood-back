@@ -33,6 +33,16 @@ public class MoodShareVO {
      * 当前用户是否已点赞
      */
     private Boolean isLiked;
+
+    /**
+     * 发布者ID
+     */
+    private Long userId;
+
+    /**
+     * 是否是当前用户发布的
+     */
+    private Boolean isOwner;
 }
 
 

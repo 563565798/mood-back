@@ -35,6 +35,7 @@ public enum ResultCode {
     MOOD_SHARE_NOT_FOUND(4003, "分享不存在"),
     ALREADY_LIKED(4004, "已经点赞过了"),
     EMAIL_NOT_MATCH(4005, "邮箱不匹配"),
+    COMMENT_NOT_FOUND(4006, "评论不存在"),
 
     // 系统相关 5xxx
     SYSTEM_ERROR(5000, "系统错误"),

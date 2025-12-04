@@ -93,10 +93,11 @@ public class MoodShareService {
         int offset = (pageNum - 1) * pageSize;
         List<MoodShareVO> shares = moodShareMapper.findAllWithPage(offset, pageSize);
         
-        // 设置是否已点赞
+        // 设置是否已点赞和是否是所有者
         for (MoodShareVO share : shares) {
             boolean isLiked = moodShareLikeMapper.existsByShareIdAndUserId(share.getId(), currentUserId) > 0;
             share.setIsLiked(isLiked);
+            share.setIsOwner(share.getUserId().equals(currentUserId));
         }
         
         Long total = moodShareMapper.countAll();
