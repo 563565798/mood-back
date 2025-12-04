@@ -72,6 +72,15 @@ public class MoodRecordController {
         MoodStatisticsVO statistics = moodRecordService.getStatistics(startDate, endDate);
         return Result.success(statistics);
     }
+
+    @ApiOperation("获取心情总结")
+    @GetMapping("/summary")
+    public Result<cn.jun.dev.vo.MoodSummaryVO> getSummary(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        cn.jun.dev.vo.MoodSummaryVO summary = moodRecordService.getSummary(startDate, endDate);
+        return Result.success(summary);
+    }
 }
 
 

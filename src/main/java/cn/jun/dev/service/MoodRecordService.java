@@ -325,6 +325,96 @@ public class MoodRecordService {
         return statistics;
     }
 
+    /**
+     * 获取心情总结
+     */
+    public cn.jun.dev.vo.MoodSummaryVO getSummary(LocalDate startDate, LocalDate endDate) {
+        Long userId = SecurityUtil.getCurrentUserId();
+
+        if (startDate == null) {
+            startDate = LocalDate.now().minusDays(6);
+        }
+        if (endDate == null) {
+            endDate = LocalDate.now();
+        }
+
+        List<MoodRecordVO> records = moodRecordMapper.findByUserIdAndDateRange(userId, startDate, endDate);
+
+        cn.jun.dev.vo.MoodSummaryVO summary = new cn.jun.dev.vo.MoodSummaryVO();
+        summary.setRecordCount(records.size());
+
+        if (records.isEmpty()) {
+            summary.setSummaryText("这段时间还没有记录哦，快去记录一下吧！");
+            return summary;
+        }
+
+        // 平均强度
+        double avgIntensity = records.stream()
+                .mapToInt(MoodRecordVO::getIntensity)
+                .average()
+                .orElse(0.0);
+        avgIntensity = Math.round(avgIntensity * 10.0) / 10.0;
+        summary.setAvgIntensity(avgIntensity);
+
+        // 主导情绪
+        Map<String, Long> moodCounts = records.stream()
+                .filter(r -> r.getMoodType() != null)
+                .collect(Collectors.groupingBy(r -> r.getMoodType().getName(), Collectors.counting()));
+        
+        String dominantMood = moodCounts.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse("无");
+        summary.setDominantMood(dominantMood);
+
+        // 关键词
+        Map<String, Long> tagCounts = new HashMap<>();
+        for (MoodRecordVO r : records) {
+            if (r.getTags() != null && !r.getTags().isEmpty()) {
+                for (String tag : r.getTags().split(",")) {
+                    String t = tag.trim();
+                    if (!t.isEmpty()) {
+                        tagCounts.put(t, tagCounts.getOrDefault(t, 0L) + 1);
+                    }
+                }
+            }
+        }
+        String keyword = tagCounts.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse("无");
+        summary.setKeyword(keyword);
+
+        // 生成总结文本
+        StringBuilder sb = new StringBuilder();
+        sb.append("在这段时间里，你共记录了").append(summary.getRecordCount()).append("次心情。");
+        sb.append("主导情绪是“").append(dominantMood).append("”，");
+        sb.append("平均强度为").append(avgIntensity).append("。");
+        
+        if (!"无".equals(keyword)) {
+            sb.append("最常提到的关键词是“").append(keyword).append("”。");
+        }
+
+        // 根据主导情绪生成建议
+        String dominantCategory = records.stream()
+            .filter(r -> r.getMoodType() != null && r.getMoodType().getName().equals(dominantMood))
+            .map(r -> r.getMoodType().getCategory())
+            .findFirst()
+            .orElse("neutral");
+
+        if ("positive".equals(dominantCategory)) {
+            sb.append("看来这段时间你过得很不错，继续保持哦！");
+        } else if ("negative".equals(dominantCategory)) {
+            sb.append("最近似乎有些低落，记得多关爱自己，一切都会好起来的。");
+        } else {
+            sb.append("心情比较平稳，平平淡淡才是真。");
+        }
+
+        summary.setSummaryText(sb.toString());
+
+        return summary;
+    }
+
     private String getWeekdayName(int weekday) {
         String[] names = { "", "周日", "周一", "周二", "周三", "周四", "周五", "周六" };
         return names[weekday];
