@@ -45,4 +45,12 @@ public class AuthController {
         authService.resetPassword(dto);
         return Result.success("密码重置成功", null);
     }
+
+    @ApiOperation("修改密码")
+    @PostMapping("/change-password")
+    public Result<Void> changePassword(@Valid @RequestBody cn.jun.dev.dto.ChangePasswordDTO dto) {
+        Long userId = cn.jun.dev.util.SecurityUtil.getCurrentUserId();
+        authService.changePassword(userId, dto);
+        return Result.success("密码修改成功，请重新登录", null);
+    }
 }

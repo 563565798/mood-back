@@ -108,4 +108,29 @@ public class AuthService {
         String encodedPassword = passwordEncoder.encode(dto.getNewPassword());
         userMapper.updatePassword(user.getId(), encodedPassword);
     }
+
+    /**
+     * 修改密码
+     */
+    public void changePassword(Long userId, cn.jun.dev.dto.ChangePasswordDTO dto) {
+        // 1. 验证两次新密码是否一致
+        if (!dto.getNewPassword().equals(dto.getConfirmNewPassword())) {
+            throw new BusinessException("两次新密码输入不一致");
+        }
+
+        // 2. 查询用户
+        User user = userMapper.findById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+        }
+
+        // 3. 验证原密码
+        if (!passwordEncoder.matches(dto.getOldPassword(), user.getPassword())) {
+            throw new BusinessException("原密码错误");
+        }
+
+        // 4. 更新密码
+        String encodedPassword = passwordEncoder.encode(dto.getNewPassword());
+        userMapper.updatePassword(userId, encodedPassword);
+    }
 }
