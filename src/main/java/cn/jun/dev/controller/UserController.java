@@ -19,10 +19,10 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    
+
     @Autowired
     private UserService userService;
-    
+
     @ApiOperation("获取当前用户信息")
     @GetMapping("/me")
     public Result<UserVO> getCurrentUser() {
@@ -30,7 +30,7 @@ public class UserController {
         UserVO userVO = userService.getUserById(userId);
         return Result.success(userVO);
     }
-    
+
     @ApiOperation("更新当前用户信息")
     @PutMapping("/me")
     public Result<Void> updateCurrentUser(@Valid @RequestBody UpdateUserDTO dto) {
@@ -38,7 +38,11 @@ public class UserController {
         userService.updateUserInfo(userId, dto);
         return Result.success("更新成功", null);
     }
+
+    @ApiOperation("根据用户名查询用户")
+    @GetMapping("/by-username")
+    public Result<UserVO> findByUsername(@RequestParam String username) {
+        UserVO userVO = userService.getUserByUsername(username);
+        return Result.success(userVO);
+    }
 }
-
-
-

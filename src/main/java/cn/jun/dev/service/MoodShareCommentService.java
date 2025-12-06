@@ -44,24 +44,29 @@ public class MoodShareCommentService {
         BeanUtils.copyProperties(dto, comment);
         comment.setUserId(userId);
 
-        // 保持昵称一致性逻辑
-        String anonymousName;
-        if (share.getUserId().equals(userId)) {
-            // 如果是分享作者（楼主），使用分享时的匿名昵称
-            anonymousName = share.getAnonymousName();
-        } else {
-            // 查找当前用户在该分享下的历史评论
-            MoodShareComment previousComment = commentMapper.findByShareIdAndUserId(dto.getShareId(), userId);
-            if (previousComment != null) {
-                // 如果评论过，使用之前的昵称
-                anonymousName = previousComment.getAnonymousName();
+        // 设置匿名状态
+        comment.setIsAnonymous(dto.getIsAnonymous() != null && dto.getIsAnonymous() ? 1 : 0);
+
+        // 匿名评论保持昵称一致性逻辑
+        if (comment.getIsAnonymous() == 1) {
+            String anonymousName;
+            if (share.getUserId().equals(userId)) {
+                // 如果是分享作者（楼主），使用分享时的匿名昵称
+                anonymousName = share.getAnonymousName();
             } else {
-                // 否则生成新昵称
-                anonymousName = generateAnonymousName();
+                // 查找当前用户在该分享下的历史评论
+                MoodShareComment previousComment = commentMapper.findByShareIdAndUserId(dto.getShareId(), userId);
+                if (previousComment != null && previousComment.getAnonymousName() != null) {
+                    // 如果评论过，使用之前的昵称
+                    anonymousName = previousComment.getAnonymousName();
+                } else {
+                    // 否则生成新昵称
+                    anonymousName = generateAnonymousName();
+                }
             }
+            comment.setAnonymousName(anonymousName);
         }
-        comment.setAnonymousName(anonymousName);
-        
+
         comment.setIsDeleted(0);
 
         commentMapper.insert(comment);
@@ -81,7 +86,7 @@ public class MoodShareCommentService {
         }
 
         MoodShare share = shareMapper.findById(comment.getShareId());
-        
+
         // 权限检查：评论作者 OR 分享作者
         boolean isCommentAuthor = comment.getUserId().equals(userId);
         boolean isShareAuthor = share != null && share.getUserId().equals(userId);
@@ -99,40 +104,43 @@ public class MoodShareCommentService {
      */
     public List<MoodShareCommentVO> getComments(Long shareId) {
         Long currentUserId = SecurityUtil.getCurrentUserId();
-        
+
         MoodShare share = shareMapper.findById(shareId);
         Long shareAuthorId = (share != null) ? share.getUserId() : null;
 
-        List<MoodShareComment> comments = commentMapper.findByShareId(shareId);
-        
+        List<MoodShareCommentVO> comments = commentMapper.findByShareId(shareId);
+
         // Create a map for quick lookup of parent names
         Map<Long, String> commentIdToNameMap = comments.stream()
-                .collect(Collectors.toMap(MoodShareComment::getId, MoodShareComment::getAnonymousName));
+                .collect(Collectors.toMap(MoodShareCommentVO::getId, vo -> {
+                    // 优先使用昵称，匿名则用匿名昵称
+                    if (vo.getNickname() != null) {
+                        return vo.getNickname();
+                    }
+                    return vo.getAnonymousName() != null ? vo.getAnonymousName() : "匿名用户";
+                }));
 
-        return comments.stream().map(comment -> {
-            MoodShareCommentVO vo = new MoodShareCommentVO();
-            BeanUtils.copyProperties(comment, vo);
-            
+        for (MoodShareCommentVO vo : comments) {
             // 设置是否是分享作者（楼主）
-            vo.setIsOwner(shareAuthorId != null && comment.getUserId().equals(shareAuthorId));
-            
+            vo.setIsOwner(shareAuthorId != null && vo.getUserId().equals(shareAuthorId));
+
             // 设置是否有删除权限
-            boolean isCommentAuthor = comment.getUserId().equals(currentUserId);
+            boolean isCommentAuthor = vo.getUserId().equals(currentUserId);
             boolean isShareAuthor = shareAuthorId != null && shareAuthorId.equals(currentUserId);
             vo.setCanDelete(isCommentAuthor || isShareAuthor);
-            
+
             // 设置回复对象昵称
-            if (comment.getParentId() != null) {
-                vo.setReplyToName(commentIdToNameMap.get(comment.getParentId()));
+            if (vo.getParentId() != null) {
+                vo.setReplyToName(commentIdToNameMap.get(vo.getParentId()));
             }
-            
-            return vo;
-        }).collect(Collectors.toList());
+        }
+
+        return comments;
     }
 
     private String generateAnonymousName() {
-        String[] adjectives = {"开心的", "忧伤的", "愤怒的", "平静的", "激动的", "焦虑的", "迷茫的", "期待的"};
-        String[] nouns = {"考拉", "袋鼠", "企鹅", "熊猫", "狮子", "老虎", "兔子", "猫咪", "小狗", "仓鼠"};
+        String[] adjectives = { "开心的", "忧伤的", "愤怒的", "平静的", "激动的", "焦虑的", "迷茫的", "期待的" };
+        String[] nouns = { "考拉", "袋鼠", "企鹅", "熊猫", "狮子", "老虎", "兔子", "猫咪", "小狗", "仓鼠" };
         int adjIndex = (int) (Math.random() * adjectives.length);
         int nounIndex = (int) (Math.random() * nouns.length);
         return adjectives[adjIndex] + nouns[nounIndex];

@@ -15,8 +15,8 @@ public interface MoodShareMapper {
         /**
          * 插入分享
          */
-        @Insert("INSERT INTO mood_share(user_id, mood_type_id, content, anonymous_name, created_at) " +
-                        "VALUES(#{userId}, #{moodTypeId}, #{content}, #{anonymousName}, NOW())")
+        @Insert("INSERT INTO mood_share(user_id, mood_type_id, content, anonymous_name, is_anonymous, created_at) " +
+                        "VALUES(#{userId}, #{moodTypeId}, #{content}, #{anonymousName}, #{isAnonymous}, NOW())")
         @Options(useGeneratedKeys = true, keyProperty = "id")
         int insert(MoodShare share);
 
@@ -33,15 +33,31 @@ public interface MoodShareMapper {
         MoodShare findById(Long id);
 
         /**
-         * 分页查询分享列表（带情绪类型信息）
+         * 分页查询分享列表（带情绪类型和用户信息）
+         * 非匿名帖子返回用户信息，匿名帖子不返回
          */
         @Results(id = "moodShareWithType", value = {
                         @Result(property = "id", column = "id"),
                         @Result(property = "userId", column = "user_id"),
                         @Result(property = "moodType", column = "mood_type_id", one = @One(select = "cn.jun.dev.mapper.MoodTypeMapper.findById"))
         })
-        @Select("SELECT * FROM mood_share WHERE is_deleted = 0 " +
-                        "ORDER BY created_at DESC LIMIT #{offset}, #{pageSize}")
+        @Select("SELECT ms.*, " +
+                        "CASE WHEN ms.is_anonymous = 0 OR ms.is_anonymous IS NULL THEN u.username ELSE NULL END as username, "
+                        +
+                        "CASE WHEN ms.is_anonymous = 0 OR ms.is_anonymous IS NULL THEN u.nickname ELSE NULL END as nickname, "
+                        +
+                        "CASE WHEN ms.is_anonymous = 0 OR ms.is_anonymous IS NULL THEN u.avatar ELSE NULL END as avatar, "
+                        +
+                        "CASE WHEN ms.is_anonymous = 0 OR ms.is_anonymous IS NULL THEN u.gender ELSE NULL END as gender, "
+                        +
+                        "CASE WHEN ms.is_anonymous = 0 OR ms.is_anonymous IS NULL THEN u.birthday ELSE NULL END as birthday, "
+                        +
+                        "CASE WHEN ms.is_anonymous = 0 OR ms.is_anonymous IS NULL THEN u.created_at ELSE NULL END as user_created_at "
+                        +
+                        "FROM mood_share ms " +
+                        "LEFT JOIN user u ON ms.user_id = u.id " +
+                        "WHERE ms.is_deleted = 0 " +
+                        "ORDER BY ms.created_at DESC LIMIT #{offset}, #{pageSize}")
         List<MoodShareVO> findAllWithPage(@Param("offset") Integer offset,
                         @Param("pageSize") Integer pageSize);
 

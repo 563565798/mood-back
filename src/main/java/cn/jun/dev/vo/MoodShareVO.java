@@ -2,6 +2,7 @@ package cn.jun.dev.vo;
 
 import cn.jun.dev.entity.MoodType;
 import lombok.Data;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -45,14 +46,39 @@ public class MoodShareVO {
     private Boolean isOwner;
 
     /**
-     * 用户名（管理员用）
+     * 是否匿名发布
+     */
+    private Boolean isAnonymous;
+
+    /**
+     * 用户名
      */
     private String username;
 
     /**
-     * 用户昵称（管理员用）
+     * 用户昵称
      */
     private String nickname;
+
+    /**
+     * 用户头像
+     */
+    private String avatar;
+
+    /**
+     * 用户性别
+     */
+    private Integer gender;
+
+    /**
+     * 用户生日
+     */
+    private LocalDate birthday;
+
+    /**
+     * 用户注册时间
+     */
+    private LocalDateTime userCreatedAt;
 
     /**
      * 是否删除

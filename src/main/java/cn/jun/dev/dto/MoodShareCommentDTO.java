@@ -13,4 +13,7 @@ public class MoodShareCommentDTO {
     private String content;
 
     private Long parentId;
+
+    /** 是否匿名 */
+    private Boolean isAnonymous;
 }

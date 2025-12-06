@@ -15,10 +15,10 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class UserService {
-    
+
     @Autowired
     private UserMapper userMapper;
-    
+
     /**
      * 根据ID获取用户信息
      */
@@ -27,19 +27,19 @@ public class UserService {
         if (user == null) {
             throw new BusinessException(ResultCode.USER_NOT_FOUND);
         }
-        
+
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(user, userVO);
         return userVO;
     }
-    
+
     /**
      * 更新用户信息
      */
     public void updateUser(User user) {
         userMapper.update(user);
     }
-    
+
     /**
      * 更新当前用户信息
      */
@@ -48,7 +48,7 @@ public class UserService {
         if (user == null) {
             throw new BusinessException(ResultCode.USER_NOT_FOUND);
         }
-        
+
         // 只更新允许修改的字段
         if (dto.getNickname() != null) {
             user.setNickname(dto.getNickname());
@@ -65,11 +65,21 @@ public class UserService {
         if (dto.getBirthday() != null) {
             user.setBirthday(dto.getBirthday());
         }
-        
+
         userMapper.update(user);
     }
+
+    /**
+     * 根据用户名获取用户信息
+     */
+    public UserVO getUserByUsername(String username) {
+        User user = userMapper.findByUsername(username);
+        if (user == null) {
+            throw new BusinessException("用户不存在");
+        }
+
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(user, userVO);
+        return userVO;
+    }
 }
-
-
-
-

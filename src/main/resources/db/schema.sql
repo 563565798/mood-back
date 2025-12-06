@@ -90,12 +90,13 @@ CREATE TABLE `tag` (
 -- ====================================
 CREATE TABLE `mood_share` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `user_id` BIGINT NOT NULL COMMENT '用户ID（匿名显示）',
+    `user_id` BIGINT NOT NULL COMMENT '用户ID',
     `mood_type_id` BIGINT NOT NULL COMMENT '情绪类型ID',
     `content` VARCHAR(500) NOT NULL COMMENT '分享内容',
     `anonymous_name` VARCHAR(20) COMMENT '匿名昵称',
     `like_count` INT NOT NULL DEFAULT 0 COMMENT '点赞数',
     `comment_count` INT NOT NULL DEFAULT 0 COMMENT '评论数',
+    `is_anonymous` TINYINT NOT NULL DEFAULT 0 COMMENT '是否匿名：0-否，1-是',
     `is_deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '是否删除：0-否，1-是',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (`id`),
@@ -127,6 +128,7 @@ CREATE TABLE `mood_share_comment` (
     `content` VARCHAR(300) NOT NULL COMMENT '评论内容',
     `anonymous_name` VARCHAR(20) COMMENT '匿名昵称',
     `parent_id` BIGINT COMMENT '父评论ID（用于回复）',
+    `is_anonymous` TINYINT NOT NULL DEFAULT 0 COMMENT '是否匿名：0-否，1-是',
     `is_deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '是否删除：0-否，1-是',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (`id`),
@@ -205,3 +207,21 @@ INSERT INTO `tag` (`name`, `category`, `color`, `user_id`) VALUES
 -- ====================================
 INSERT INTO `user` (`username`, `password`, `email`, `nickname`, `status`, `role`) VALUES
 ('admin', '$2a$10$C9mtedWeiDOujYGJ/IFC.uS0YuVRWyFqSxG/IWJ2TDiDmzUIOsLTu', 'admin@mood.com', '系统管理员', 1, 1);
+
+-- ====================================
+-- 私信表
+-- ====================================
+CREATE TABLE `private_message` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `sender_id` BIGINT NOT NULL COMMENT '发送者ID',
+    `receiver_id` BIGINT NOT NULL COMMENT '接收者ID',
+    `content` VARCHAR(500) NOT NULL COMMENT '消息内容',
+    `is_read` TINYINT NOT NULL DEFAULT 0 COMMENT '是否已读：0-未读，1-已读',
+    `is_deleted_by_sender` TINYINT NOT NULL DEFAULT 0 COMMENT '发送者是否删除',
+    `is_deleted_by_receiver` TINYINT NOT NULL DEFAULT 0 COMMENT '接收者是否删除',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_sender_id` (`sender_id`),
+    KEY `idx_receiver_id` (`receiver_id`),
+    KEY `idx_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='私信表';
