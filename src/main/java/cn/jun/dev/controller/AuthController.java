@@ -1,8 +1,10 @@
 package cn.jun.dev.controller;
 
 import cn.jun.dev.common.Result;
+import cn.jun.dev.dto.ChangePasswordDTO;
 import cn.jun.dev.dto.LoginDTO;
 import cn.jun.dev.dto.RegisterDTO;
+import cn.jun.dev.dto.ResetPasswordDTO;
 import cn.jun.dev.service.AuthService;
 import cn.jun.dev.vo.LoginVO;
 import io.swagger.annotations.Api;
@@ -41,14 +43,14 @@ public class AuthController {
 
     @ApiOperation("忘记密码")
     @PostMapping("/reset-password")
-    public Result<Void> resetPassword(@Valid @RequestBody cn.jun.dev.dto.ResetPasswordDTO dto) {
+    public Result<Void> resetPassword(@Valid @RequestBody ResetPasswordDTO dto) {
         authService.resetPassword(dto);
         return Result.success("密码重置成功", null);
     }
 
     @ApiOperation("修改密码")
     @PostMapping("/change-password")
-    public Result<Void> changePassword(@Valid @RequestBody cn.jun.dev.dto.ChangePasswordDTO dto) {
+    public Result<Void> changePassword(@Valid @RequestBody ChangePasswordDTO dto) {
         Long userId = cn.jun.dev.util.SecurityUtil.getCurrentUserId();
         authService.changePassword(userId, dto);
         return Result.success("密码修改成功，请重新登录", null);
