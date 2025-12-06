@@ -9,6 +9,7 @@ import cn.jun.dev.mapper.MoodShareLikeMapper;
 import cn.jun.dev.mapper.MoodShareMapper;
 import cn.jun.dev.mapper.MoodTypeMapper;
 import cn.jun.dev.util.SecurityUtil;
+import cn.jun.dev.util.SensitiveWordUtil;
 import cn.jun.dev.vo.MoodShareVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,9 @@ public class MoodShareService {
         if (moodTypeMapper.findById(dto.getMoodTypeId()) == null) {
             throw new BusinessException(ResultCode.MOOD_TYPE_NOT_FOUND);
         }
+
+        // 敏感词校验
+        SensitiveWordUtil.validate(dto.getContent());
 
         MoodShare share = new MoodShare();
         BeanUtils.copyProperties(dto, share);

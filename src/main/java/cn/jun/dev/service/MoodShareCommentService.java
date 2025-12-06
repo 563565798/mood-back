@@ -8,6 +8,7 @@ import cn.jun.dev.exception.BusinessException;
 import cn.jun.dev.mapper.MoodShareCommentMapper;
 import cn.jun.dev.mapper.MoodShareMapper;
 import cn.jun.dev.util.SecurityUtil;
+import cn.jun.dev.util.SensitiveWordUtil;
 import cn.jun.dev.vo.MoodShareCommentVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,9 @@ public class MoodShareCommentService {
         if (share == null) {
             throw new BusinessException(ResultCode.MOOD_SHARE_NOT_FOUND);
         }
+
+        // 敏感词校验
+        SensitiveWordUtil.validate(dto.getContent());
 
         MoodShareComment comment = new MoodShareComment();
         BeanUtils.copyProperties(dto, comment);

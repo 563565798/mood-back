@@ -1,5 +1,6 @@
 package cn.jun.dev.service;
 
+import cn.jun.dev.dto.SendMessageDTO;
 import cn.jun.dev.entity.MoodShare;
 import cn.jun.dev.entity.MoodShareComment;
 import cn.jun.dev.entity.User;
@@ -7,6 +8,7 @@ import cn.jun.dev.exception.BusinessException;
 import cn.jun.dev.mapper.MoodShareCommentMapper;
 import cn.jun.dev.mapper.MoodShareMapper;
 import cn.jun.dev.mapper.UserMapper;
+import cn.jun.dev.util.SecurityUtil;
 import cn.jun.dev.vo.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,9 @@ public class AdminService {
 
     @Autowired
     private MoodShareCommentMapper moodShareCommentMapper;
+
+    @Autowired
+    private MessageService messageService;
 
     /**
      * 分页获取用户列表
@@ -78,6 +83,16 @@ public class AdminService {
             throw new BusinessException("用户不存在");
         }
         userMapper.updateAvatar(userId, null);
+
+        // 发送违规通知私信
+        Long currentAdminId = SecurityUtil.getCurrentUserId();
+        // 避免自己给自己发私信报错
+        if (!currentAdminId.equals(userId)) {
+            cn.jun.dev.dto.SendMessageDTO messageDTO = new SendMessageDTO();
+            messageDTO.setReceiverId(userId);
+            messageDTO.setContent("您的头像因违规已被重置为默认头像，请注意遵守社区规范。");
+            messageService.sendMessage(currentAdminId, messageDTO);
+        }
     }
 
     /**

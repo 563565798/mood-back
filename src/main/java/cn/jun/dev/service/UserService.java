@@ -5,6 +5,7 @@ import cn.jun.dev.dto.UpdateUserDTO;
 import cn.jun.dev.entity.User;
 import cn.jun.dev.exception.BusinessException;
 import cn.jun.dev.mapper.UserMapper;
+import cn.jun.dev.util.SensitiveWordUtil;
 import cn.jun.dev.vo.UserVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,8 @@ public class UserService {
 
         // 只更新允许修改的字段
         if (dto.getNickname() != null) {
+            // 敏感词校验
+            SensitiveWordUtil.validate(dto.getNickname());
             user.setNickname(dto.getNickname());
         }
         if (dto.getEmail() != null) {
