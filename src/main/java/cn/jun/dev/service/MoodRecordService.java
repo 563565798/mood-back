@@ -71,19 +71,19 @@ public class MoodRecordService {
         if (record.getRecordTime() == null) {
             record.setRecordTime(LocalTime.now());
         }
-        
+
         // 验证时间
         validateRecordTime(record.getRecordDate(), record.getRecordTime());
-        
+
         if (record.getIsPrivate() == null) {
             record.setIsPrivate(1);
         }
 
         moodRecordMapper.insert(record);
-        
+
         return checkMoodWarning(userId);
     }
-    
+
     private MoodWarningVO checkMoodWarning(Long userId) {
         List<MoodRecordVO> recentRecords = moodRecordMapper.findRecentRecords(userId, 3);
         if (recentRecords.size() < 3) {
@@ -156,12 +156,16 @@ public class MoodRecordService {
     /**
      * 分页查询情绪记录
      */
-    public PageResult<MoodRecordVO> getRecordPage(Integer pageNum, Integer pageSize) {
+    public PageResult<MoodRecordVO> getRecordPage(Integer pageNum, Integer pageSize,
+            cn.jun.dev.dto.MoodRecordQueryDTO query) {
         Long userId = SecurityUtil.getCurrentUserId();
 
         int offset = (pageNum - 1) * pageSize;
-        List<MoodRecordVO> records = moodRecordMapper.findByUserIdWithPage(userId, offset, pageSize);
-        Long total = moodRecordMapper.countByUserId(userId);
+        if (query == null) {
+            query = new cn.jun.dev.dto.MoodRecordQueryDTO();
+        }
+        List<MoodRecordVO> records = moodRecordMapper.findByUserIdWithPage(userId, query, offset, pageSize);
+        Long total = moodRecordMapper.countByUserId(userId, query);
 
         return new PageResult<>(records, total, pageNum, pageSize);
     }
@@ -205,7 +209,7 @@ public class MoodRecordService {
         MoodStatisticsVO statistics = new MoodStatisticsVO();
 
         // 总记录数
-        statistics.setTotalRecords(moodRecordMapper.countByUserId(userId));
+        statistics.setTotalRecords(moodRecordMapper.countByUserId(userId, new cn.jun.dev.dto.MoodRecordQueryDTO()));
 
         // 计算连续记录天数
         List<LocalDate> recordDates = moodRecordMapper.findDistinctRecordDatesByUserId(userId);
@@ -360,7 +364,7 @@ public class MoodRecordService {
         Map<String, Long> moodCounts = records.stream()
                 .filter(r -> r.getMoodType() != null)
                 .collect(Collectors.groupingBy(r -> r.getMoodType().getName(), Collectors.counting()));
-        
+
         String dominantMood = moodCounts.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
@@ -390,17 +394,17 @@ public class MoodRecordService {
         sb.append("在这段时间里，你共记录了").append(summary.getRecordCount()).append("次心情。");
         sb.append("主导情绪是“").append(dominantMood).append("”，");
         sb.append("平均强度为").append(avgIntensity).append("。");
-        
+
         if (!"无".equals(keyword)) {
             sb.append("最常提到的关键词是“").append(keyword).append("”。");
         }
 
         // 根据主导情绪生成建议
         String dominantCategory = records.stream()
-            .filter(r -> r.getMoodType() != null && r.getMoodType().getName().equals(dominantMood))
-            .map(r -> r.getMoodType().getCategory())
-            .findFirst()
-            .orElse("neutral");
+                .filter(r -> r.getMoodType() != null && r.getMoodType().getName().equals(dominantMood))
+                .map(r -> r.getMoodType().getCategory())
+                .findFirst()
+                .orElse("neutral");
 
         if ("positive".equals(dominantCategory)) {
             sb.append("看来这段时间你过得很不错，继续保持哦！");

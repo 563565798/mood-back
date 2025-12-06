@@ -53,17 +53,34 @@ public interface MoodRecordMapper {
                         @Result(property = "id", column = "id"),
                         @Result(property = "moodType", column = "mood_type_id", one = @One(select = "cn.jun.dev.mapper.MoodTypeMapper.findById"))
         })
-        @Select("SELECT * FROM mood_record WHERE user_id = #{userId} " +
-                        "ORDER BY record_date DESC, record_time DESC LIMIT #{offset}, #{pageSize}")
+        @Select("<script>" +
+                        "SELECT * FROM mood_record WHERE user_id = #{userId} " +
+                        "<if test='query.moodTypeId != null'> AND mood_type_id = #{query.moodTypeId} </if>" +
+                        "<if test='query.intensity != null'> AND intensity = #{query.intensity} </if>" +
+                        "<if test='query.tag != null and query.tag != \"\"'> AND tags LIKE CONCAT('%', #{query.tag}, '%') </if>"
+                        +
+                        "<if test='query.startDate != null'> AND record_date &gt;= #{query.startDate} </if>" +
+                        "<if test='query.endDate != null'> AND record_date &lt;= #{query.endDate} </if>" +
+                        "ORDER BY record_date DESC, record_time DESC LIMIT #{offset}, #{pageSize}" +
+                        "</script>")
         List<MoodRecordVO> findByUserIdWithPage(@Param("userId") Long userId,
+                        @Param("query") cn.jun.dev.dto.MoodRecordQueryDTO query,
                         @Param("offset") Integer offset,
                         @Param("pageSize") Integer pageSize);
 
         /**
          * 统计用户的情绪记录总数
          */
-        @Select("SELECT COUNT(*) FROM mood_record WHERE user_id = #{userId}")
-        Long countByUserId(Long userId);
+        @Select("<script>" +
+                        "SELECT COUNT(*) FROM mood_record WHERE user_id = #{userId} " +
+                        "<if test='query.moodTypeId != null'> AND mood_type_id = #{query.moodTypeId} </if>" +
+                        "<if test='query.intensity != null'> AND intensity = #{query.intensity} </if>" +
+                        "<if test='query.tag != null and query.tag != \"\"'> AND tags LIKE CONCAT('%', #{query.tag}, '%') </if>"
+                        +
+                        "<if test='query.startDate != null'> AND record_date &gt;= #{query.startDate} </if>" +
+                        "<if test='query.endDate != null'> AND record_date &lt;= #{query.endDate} </if>" +
+                        "</script>")
+        Long countByUserId(@Param("userId") Long userId, @Param("query") cn.jun.dev.dto.MoodRecordQueryDTO query);
 
         /**
          * 查询用户指定日期范围的情绪记录
