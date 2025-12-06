@@ -24,4 +24,25 @@ public interface MoodShareCommentMapper {
 
     @Select("SELECT * FROM mood_share_comment WHERE share_id = #{shareId} AND user_id = #{userId} LIMIT 1")
     MoodShareComment findByShareIdAndUserId(@Param("shareId") Long shareId, @Param("userId") Long userId);
+
+    /**
+     * 分页查询所有评论（管理员，包含已删除）
+     */
+    @Select("SELECT msc.*, u.username, u.nickname FROM mood_share_comment msc " +
+            "LEFT JOIN user u ON msc.user_id = u.id " +
+            "ORDER BY msc.created_at DESC LIMIT #{offset}, #{pageSize}")
+    List<MoodShareComment> findAllWithPageForAdmin(@Param("offset") Integer offset,
+            @Param("pageSize") Integer pageSize);
+
+    /**
+     * 统计所有评论总数（管理员，包含已删除）
+     */
+    @Select("SELECT COUNT(*) FROM mood_share_comment")
+    Long countAllForAdmin();
+
+    /**
+     * 更新删除状态（管理员）
+     */
+    @Update("UPDATE mood_share_comment SET is_deleted = #{isDeleted} WHERE id = #{id}")
+    int updateDeleteStatus(@Param("id") Long id, @Param("isDeleted") Integer isDeleted);
 }

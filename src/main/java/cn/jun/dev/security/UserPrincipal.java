@@ -11,12 +11,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserPrincipal {
-    
+
     private Long userId;
-    
+
     private String username;
+
+    private Integer role;
 }
-
-
-
-

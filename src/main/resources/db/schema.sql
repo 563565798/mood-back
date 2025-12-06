@@ -20,6 +20,7 @@ CREATE TABLE `user` (
     `gender` TINYINT COMMENT '性别：0-未知，1-男，2-女',
     `birthday` DATE COMMENT '生日',
     `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：0-禁用，1-正常',
+    `role` TINYINT NOT NULL DEFAULT 0 COMMENT '角色：0-普通用户，1-管理员',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
@@ -198,6 +199,9 @@ INSERT INTO `tag` (`name`, `category`, `color`, `user_id`) VALUES
 ('娱乐', 'other', '#f1c40f', NULL),
 ('旅行', 'other', '#1abc9c', NULL);
 
-
-
-
+-- ====================================
+-- 初始化数据 - 默认管理员账户
+-- 密码: admin123 (BCrypt加密)
+-- ====================================
+INSERT INTO `user` (`username`, `password`, `email`, `nickname`, `status`, `role`) VALUES
+('admin', '$2a$10$C9mtedWeiDOujYGJ/IFC.uS0YuVRWyFqSxG/IWJ2TDiDmzUIOsLTu', 'admin@mood.com', '系统管理员', 1, 1);

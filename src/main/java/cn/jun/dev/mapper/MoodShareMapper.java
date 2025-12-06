@@ -80,4 +80,25 @@ public interface MoodShareMapper {
          */
         @Select("SELECT COUNT(*) FROM mood_share WHERE user_id = #{userId} AND is_deleted = 0")
         Long countByUserId(Long userId);
+
+        /**
+         * 分页查询所有分享（管理员，包含已删除）
+         */
+        @Select("SELECT ms.*, u.username, u.nickname FROM mood_share ms " +
+                        "LEFT JOIN user u ON ms.user_id = u.id " +
+                        "ORDER BY ms.created_at DESC LIMIT #{offset}, #{pageSize}")
+        List<MoodShareVO> findAllWithPageForAdmin(@Param("offset") Integer offset,
+                        @Param("pageSize") Integer pageSize);
+
+        /**
+         * 统计所有分享总数（管理员，包含已删除）
+         */
+        @Select("SELECT COUNT(*) FROM mood_share")
+        Long countAllForAdmin();
+
+        /**
+         * 更新删除状态（管理员）
+         */
+        @Update("UPDATE mood_share SET is_deleted = #{isDeleted} WHERE id = #{id}")
+        int updateDeleteStatus(@Param("id") Long id, @Param("isDeleted") Integer isDeleted);
 }

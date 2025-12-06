@@ -8,7 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * Security工具类
  */
 public class SecurityUtil {
-    
+
     /**
      * 获取当前登录用户ID
      */
@@ -16,7 +16,7 @@ public class SecurityUtil {
         UserPrincipal userPrincipal = getCurrentUser();
         return userPrincipal != null ? userPrincipal.getUserId() : null;
     }
-    
+
     /**
      * 获取当前登录用户名
      */
@@ -24,7 +24,23 @@ public class SecurityUtil {
         UserPrincipal userPrincipal = getCurrentUser();
         return userPrincipal != null ? userPrincipal.getUsername() : null;
     }
-    
+
+    /**
+     * 获取当前登录用户角色
+     */
+    public static Integer getCurrentRole() {
+        UserPrincipal userPrincipal = getCurrentUser();
+        return userPrincipal != null ? userPrincipal.getRole() : null;
+    }
+
+    /**
+     * 判断当前用户是否是管理员
+     */
+    public static boolean isAdmin() {
+        Integer role = getCurrentRole();
+        return role != null && role == 1;
+    }
+
     /**
      * 获取当前登录用户信息
      */
@@ -36,7 +52,3 @@ public class SecurityUtil {
         return null;
     }
 }
-
-
-
-

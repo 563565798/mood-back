@@ -11,66 +11,67 @@ import java.time.LocalDateTime;
  */
 @Data
 public class User implements Serializable {
-    
+
     private static final long serialVersionUID = 1L;
-    
+
     /**
      * 主键ID
      */
     private Long id;
-    
+
     /**
      * 用户名
      */
     private String username;
-    
+
     /**
      * 密码（加密）
      */
     @JsonIgnore
     private String password;
-    
+
     /**
      * 邮箱
      */
     private String email;
-    
+
     /**
      * 昵称
      */
     private String nickname;
-    
+
     /**
      * 头像URL
      */
     private String avatar;
-    
+
     /**
      * 性别：0-未知，1-男，2-女
      */
     private Integer gender;
-    
+
     /**
      * 生日
      */
     private LocalDate birthday;
-    
+
     /**
      * 状态：0-禁用，1-正常
      */
     private Integer status;
-    
+
+    /**
+     * 角色：0-普通用户，1-管理员
+     */
+    private Integer role;
+
     /**
      * 创建时间
      */
     private LocalDateTime createdAt;
-    
+
     /**
      * 更新时间
      */
     private LocalDateTime updatedAt;
 }
-
-
-
-

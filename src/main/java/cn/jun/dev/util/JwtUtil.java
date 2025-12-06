@@ -16,29 +16,30 @@ import java.util.Date;
  */
 @Component
 public class JwtUtil {
-    
+
     @Value("${jwt.secret}")
     private String secret;
-    
+
     @Value("${jwt.expiration}")
     private Long expiration;
-    
+
     /**
      * 生成Token
      */
-    public String generateToken(Long userId, String username) {
+    public String generateToken(Long userId, String username, Integer role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
-        
+
         return Jwts.builder()
                 .setSubject(userId.toString())
                 .claim("username", username)
+                .claim("role", role)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(getSecretKey(), SignatureAlgorithm.HS512)
                 .compact();
     }
-    
+
     /**
      * 从Token中获取用户ID
      */
@@ -46,7 +47,7 @@ public class JwtUtil {
         Claims claims = parseToken(token);
         return Long.parseLong(claims.getSubject());
     }
-    
+
     /**
      * 从Token中获取用户名
      */
@@ -54,7 +55,15 @@ public class JwtUtil {
         Claims claims = parseToken(token);
         return claims.get("username", String.class);
     }
-    
+
+    /**
+     * 从Token中获取角色
+     */
+    public Integer getRoleFromToken(String token) {
+        Claims claims = parseToken(token);
+        return claims.get("role", Integer.class);
+    }
+
     /**
      * 验证Token是否有效
      */
@@ -66,7 +75,7 @@ public class JwtUtil {
             return false;
         }
     }
-    
+
     /**
      * 解析Token
      */
@@ -77,7 +86,7 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody();
     }
-    
+
     /**
      * 获取密钥
      */
@@ -85,6 +94,3 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 }
-
-
-

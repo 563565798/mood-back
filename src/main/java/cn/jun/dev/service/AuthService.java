@@ -79,8 +79,9 @@ public class AuthService {
             throw new BusinessException(ResultCode.USER_DISABLED);
         }
 
-        // 生成Token
-        String token = jwtUtil.generateToken(user.getId(), user.getUsername());
+        // 生成Token（包含角色信息）
+        Integer role = user.getRole() != null ? user.getRole() : 0;
+        String token = jwtUtil.generateToken(user.getId(), user.getUsername(), role);
 
         // 构建用户信息VO
         UserVO userVO = new UserVO();

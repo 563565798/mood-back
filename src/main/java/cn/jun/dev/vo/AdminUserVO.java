@@ -5,10 +5,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * 用户VO
+ * 管理员视角的用户VO
  */
 @Data
-public class UserVO {
+public class AdminUserVO {
 
     private Long id;
 
@@ -29,4 +29,12 @@ public class UserVO {
     private Integer role;
 
     private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+    /** 分享帖子数 */
+    private Long shareCount;
+
+    /** 评论数 */
+    private Long commentCount;
 }
