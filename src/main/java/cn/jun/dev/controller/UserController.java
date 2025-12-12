@@ -45,4 +45,12 @@ public class UserController {
         UserVO userVO = userService.getUserByUsername(username);
         return Result.success(userVO);
     }
+
+    @ApiOperation("更新私信开启状态")
+    @PutMapping("/msg-status")
+    public Result<Void> updateMsgStatus(@RequestParam Integer isOpen) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        userService.updateMsgStatus(userId, isOpen);
+        return Result.success("更新成功", null);
+    }
 }

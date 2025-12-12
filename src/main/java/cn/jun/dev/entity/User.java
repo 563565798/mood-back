@@ -61,6 +61,11 @@ public class User implements Serializable {
     private Integer status;
 
     /**
+     * 私信开启状态：0-关闭，1-开启
+     */
+    private Integer isMsgOpen;
+
+    /**
      * 角色：0-普通用户，1-管理员
      */
     private Integer role;

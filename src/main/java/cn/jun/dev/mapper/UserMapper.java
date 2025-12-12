@@ -32,8 +32,9 @@ public interface UserMapper {
         /**
          * 插入用户
          */
-        @Insert("INSERT INTO user(username, password, email, nickname, avatar, status, role, created_at, updated_at) " +
-                        "VALUES(#{username}, #{password}, #{email}, #{nickname}, #{avatar}, #{status}, #{role}, NOW(), NOW())")
+        @Insert("INSERT INTO user(username, password, email, nickname, avatar, status, role, is_msg_open, created_at, updated_at) "
+                        +
+                        "VALUES(#{username}, #{password}, #{email}, #{nickname}, #{avatar}, #{status}, #{role}, 1, NOW(), NOW())")
         @Options(useGeneratedKeys = true, keyProperty = "id")
         int insert(User user);
 
@@ -73,4 +74,10 @@ public interface UserMapper {
          */
         @Update("UPDATE user SET avatar = #{avatar}, updated_at = NOW() WHERE id = #{id}")
         int updateAvatar(@Param("id") Long id, @Param("avatar") String avatar);
+
+        /**
+         * 更新私信开启状态
+         */
+        @Update("UPDATE user SET is_msg_open = #{isOpen}, updated_at = NOW() WHERE id = #{id}")
+        int updateMsgStatus(@Param("id") Long id, @Param("isOpen") Integer isOpen);
 }

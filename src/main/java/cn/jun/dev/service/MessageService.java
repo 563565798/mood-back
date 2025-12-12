@@ -35,6 +35,15 @@ public class MessageService {
             throw new BusinessException("接收者不存在");
         }
 
+        // Check if receiver accepts private messages
+        if (receiver.getIsMsgOpen() != null && receiver.getIsMsgOpen() == 0) {
+            // Check if sender is admin
+            User sender = userMapper.findById(senderId);
+            if (sender.getRole() != 1) {
+                throw new BusinessException("对方已关闭私信接收功能");
+            }
+        }
+
         // 不能给自己发私信
         if (senderId.equals(dto.getReceiverId())) {
             throw new BusinessException("不能给自己发送私信");
@@ -97,7 +106,28 @@ public class MessageService {
     /**
      * 获取未读消息数
      */
+    /**
+     * 获取未读消息数
+     */
     public Long getUnreadCount(Long userId) {
         return messageMapper.countUnread(userId);
+    }
+
+    /**
+     * 删除私信
+     */
+    public void deleteMessage(Long id, Long userId) {
+        PrivateMessage message = messageMapper.findById(id);
+        if (message == null) {
+            throw new BusinessException("消息不存在");
+        }
+
+        if (userId.equals(message.getSenderId())) {
+            messageMapper.deleteBySender(id, userId);
+        } else if (userId.equals(message.getReceiverId())) {
+            messageMapper.deleteByReceiver(id, userId);
+        } else {
+            throw new BusinessException("无权删除该消息");
+        }
     }
 }

@@ -72,4 +72,12 @@ public class MessageController {
         Long userId = SecurityUtil.getCurrentUserId();
         return Result.success(messageService.getUnreadCount(userId));
     }
+
+    @ApiOperation("删除私信")
+    @DeleteMapping("/{id}")
+    public Result<Void> deleteMessage(@PathVariable Long id) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        messageService.deleteMessage(id, userId);
+        return Result.success("删除成功", null);
+    }
 }

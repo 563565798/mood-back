@@ -28,5 +28,7 @@ public class UserVO {
 
     private Integer role;
 
+    private Integer isMsgOpen;
+
     private LocalDateTime createdAt;
 }

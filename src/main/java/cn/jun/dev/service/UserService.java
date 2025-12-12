@@ -85,4 +85,11 @@ public class UserService {
         BeanUtils.copyProperties(user, userVO);
         return userVO;
     }
+
+    /**
+     * 更新私信开启状态
+     */
+    public void updateMsgStatus(Long userId, Integer isOpen) {
+        userMapper.updateMsgStatus(userId, isOpen);
+    }
 }
